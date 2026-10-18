@@ -103,6 +103,72 @@
     .playerSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
     .score { font-size: 15px; font-weight: 850; font-variant-numeric: tabular-nums; text-align: right; }
     .scoreSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
+
+    .boardActions { display: flex; align-items: center; gap: 10px; }
+    .tabs { display: flex; gap: 6px; padding: 4px; background: #10151b; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; }
+    .tab { flex: 1; background: none; border: 0; border-radius: 10px; padding: 11px 8px; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 700; }
+    .tab[aria-selected="true"] { background: #2b3640; color: var(--fg); }
+    .tab:focus-visible, .miniButton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .miniButton { border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; background: var(--surface2); color: var(--fg); cursor: pointer; font-size: 12px; font-weight: 750; }
+    .miniButton:disabled { opacity: .5; cursor: default; }
+    .boardInfo { color: var(--muted); min-height: 18px; font-size: 12px; margin: 0 0 10px; }
+    .saveStatus { font-size: 12px; margin: 12px 0 0; color: #d7f465; line-height: 1.45; }
+    .saveStatus.warn { color: #ffacb3; }
+    .retryButton { margin-top: 10px; }
+    .scoreRow .playerSub { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    [hidden] { display: none !important; }
+
+    /* Interaktionsfeedback ohne sichtbaren Zeitverlauf */
+    button { -webkit-tap-highlight-color: transparent; }
+    .inputwrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px #d7f4651c; }
+    .inputwrap.invalid { border-color: var(--red); box-shadow: 0 0 0 2px #ff5d6722; }
+    .nameControls { display:flex; align-items:center; gap:10px; margin: 8px 0 0; }
+    .nameInfo { flex:1; min-height:20px; font-size:11px; line-height:1.4; color:var(--muted); }
+    .nameInfo.ok { color:var(--accent); }
+    .nameInfo.err { color:#ff9ba6; }
+    .nameButton { flex-shrink:0; white-space:nowrap; }
+    #player[readonly] { color:var(--accent); opacity:1; }
+    .lockedName .inputwrap { border-color:#829e3d; box-shadow:inset 0 0 18px #d7f4650a; }
+    .statusArea { min-height: 21px; }
+    .controls { display:flex; justify-content:center; margin:14px 0 0; }
+    button.miniButton, button.tab, button.clear {
+      transition: background-color .2s, border-color .2s, color .2s, transform .16s, box-shadow .2s;
+    }
+    .miniButton:hover:not(:disabled), .miniButton:focus-visible, .clear:focus-visible {
+      border-color:var(--accent); box-shadow:0 0 0 3px #d7f46520; color:var(--accent);
+    }
+    .miniButton:active:not(:disabled), .tab:active, .clear:active { transform:scale(.95); }
+    .tab:hover { color:var(--fg); background:#25303b; }
+    .tab[aria-selected="true"] {
+      background:linear-gradient(145deg,#e6ff94,#b9de37); color:#26330d;
+      box-shadow:0 3px 12px #9ec33740;
+    }
+    .buzzer { position:relative; isolation:isolate; transition: transform .12s, box-shadow .2s, filter .2s, background .2s; }
+    .buzzer:hover { filter:brightness(1.07); box-shadow:0 11px 0 #677c22,0 24px 43px #000a,0 0 28px #d7f46545; }
+    .buzzer.pop::after {
+      content:""; position:absolute; inset:-22px; border-radius:50%; border:3px solid #d7f465;
+      opacity:0; animation:buzzerRing .6s ease-out; pointer-events:none;
+    }
+    .running .buzzer.pop::after { border-color:#ff8188; }
+    .running .buzzer:hover { box-shadow:0 11px 0 #76212c,0 24px 42px #000a,0 0 25px #ff5d6745; }
+    @keyframes buzzerRing {0% { opacity:.85; transform:scale(.75) } 100% { opacity:0; transform:scale(1.2) }}
+    .result:not([hidden]) { animation:resultIn .45s cubic-bezier(.2,.9,.25,1.1) both; }
+    @keyframes resultIn { from {opacity:0;transform:translateY(20px) scale(.97)} to {opacity:1;transform:translateY(0) scale(1)} }
+    .scoreRow { animation:rowIn .36s ease-out both; animation-delay:var(--delay,0ms); }
+    @keyframes rowIn { from {opacity:0;transform:translateY(7px)} to {opacity:1;transform:translateY(0)} }
+    .arena {position:relative; isolation:isolate; }
+    .spark {position:absolute;left:var(--x);top:var(--y);width:9px;height:9px;border-radius:3px;background:var(--c);
+      pointer-events:none;z-index:5;box-shadow:0 0 10px var(--c);
+      animation:sparkFly .7s cubic-bezier(.12,.8,.2,1) forwards;
+    }
+    @keyframes sparkFly {to {opacity:0;transform:translate(var(--dx),var(--dy)) rotate(220deg) scale(.2)}}
+    .soundButton[aria-pressed="true"] {border-color:#91b73e;background:#2c3a20;color:#d7f465;box-shadow:0 0 0 2px #c5ee4a14;}
+    .soundButton[aria-pressed="false"] {color:var(--muted);}
+    .soundButton { min-width:109px; }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after {animation-duration:.01ms !important;transition-duration:.01ms !important;}
+      .spark {display:none;}
+    }
     @media (max-width: 390px) {
       .settings { grid-template-columns: 1fr 1fr; gap: 9px; }
       .app { padding-left: 14px; padding-right: 14px; }
@@ -122,22 +188,24 @@
     <section class="settings" aria-label="Spiel-Einstellungen">
       <div class="field">
         <label for="goal">Zielzeit</label>
-        <div class="inputwrap"><input id="goal" type="number" min="0.5" max="300" step="0.1" value="10" inputmode="decimal" aria-describedby="validInfo"><span class="unit">Sek.</span></div>
+        <div class="inputwrap"><input id="goal" type="number" min="1" max="300" step="0.1" value="10" inputmode="decimal" aria-describedby="validInfo"><span class="unit">Sek.</span></div>
       </div>
       <div class="field">
-        <label for="player">Name (optional)</label>
-        <div class="inputwrap"><input id="player" type="text" maxlength="32" autocomplete="off" placeholder="Spielername"></div>
+        <label for="player">Benutzername (Pflicht)</label>
+        <div class="inputwrap" id="playerWrap"><input id="player" type="text" maxlength="24" minlength="3" autocomplete="nickname" placeholder="3–24 Zeichen" spellcheck="false" required></div>
+        <div class="nameControls"><div class="nameInfo" id="nameInfo" role="status">Wähle einen eindeutigen Namen.</div><button class="miniButton nameButton" id="claimName" type="button">Name sichern</button></div>
       </div>
     </section>
 
     <section class="arena" id="arena" aria-label="Zeitgefühl-Challenge">
       <div class="targetLabel">DEIN ZIEL</div>
       <div class="target" id="target">10,00 s</div>
-      <div class="status" id="status" aria-live="polite">Bereit? Starte mit einem Druck.</div>
+      <div class="status" id="status" aria-live="polite">Zuerst einen Namen sichern, dann starten.</div>
       <button class="buzzer" id="buzzer" type="button" aria-label="Zeitmessung starten">
         <span class="buzzerText" id="buzzerText">START</span>
         <span class="buzzerHint" id="buzzerHint">BUZZER DRÜCKEN</span>
       </button>
+      <div class="controls"><button type="button" class="miniButton soundButton" id="soundToggle" aria-pressed="true">♪ Ton an</button></div>
       <div class="footerNote" id="instruction">1. Druck: Start &nbsp;·&nbsp; 2. Druck: Stopp<br>Kein Countdown, keine sichtbare laufende Zeit.</div>
     </section>
 
@@ -148,19 +216,43 @@
         <div><div class="resultLabel">Abweichung</div><div class="resultNum" id="deviation">–</div></div>
       </div>
       <p class="resultCaption" id="resultCaption"></p>
+      <p class="saveStatus" id="saveStatus" role="status"></p>
+      <button class="miniButton retryButton" id="retry" type="button" hidden>Erneut global speichern</button>
     </section>
 
     <section class="board" aria-label="Bestenliste">
-      <div class="boardHead"><h2>Bestenliste</h2><button class="clear" id="clear" type="button">Liste löschen</button></div>
-      <div class="scoreRows" id="scoreRows"><div class="empty">Noch keine Versuche. Die kleinste Abweichung gewinnt.</div></div>
+      <div class="boardHead">
+        <h2>Bestenliste</h2>
+        <div class="boardActions">
+          <button class="miniButton" id="refresh" type="button">Aktualisieren</button>
+          <button class="clear" id="clear" type="button" hidden>Lokale Liste löschen</button>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Bestenliste auswählen">
+        <button type="button" class="tab" role="tab" id="globalTab" aria-selected="true" aria-controls="scoreRows">Global</button>
+        <button type="button" class="tab" role="tab" id="localTab" aria-selected="false" aria-controls="scoreRows">Dieses Gerät</button>
+      </div>
+      <p class="boardInfo" id="boardInfo" role="status">Lade weltweite Ergebnisse …</p>
+      <div class="scoreRows" id="scoreRows" role="tabpanel" aria-live="polite"><div class="empty">Bestenliste wird geladen …</div></div>
     </section>
-    <p class="intro" id="validInfo" style="font-size:11px;margin-top:14px">Zielzeit: 0,5 bis 300 Sekunden. Jeder Buzzer-Druck zählt. Die Bestenliste wird auf diesem Gerät gespeichert, sofern der Browser dies zulässt.</p>
+    <p class="intro" id="validInfo" style="font-size:11px;margin-top:14px">Zielzeit: 1–300 Sekunden. Namen sind weltweit eindeutig (Groß-/Kleinschreibung egal). Namen gehören zum aktuellen Browser; beim Löschen der Browserdaten kann der Name nicht automatisch wiederhergestellt werden. Ergebnisse können technisch manipuliert werden.</p>
   </main>
 
   <script>
+
     'use strict';
+    // Publishable Key ist ausdrücklich für den Browser bestimmt. Niemals einen Secret Key hier eintragen.
+    const SUPABASE_URL = 'https://lfnykwmysjbalweognjc.supabase.co';
+    const SUPABASE_PUBLIC_KEY = 'sb_publishable_c44vw92ddWKDgqhGdML7kw_aii21Flt';
+    const ENDPOINT = SUPABASE_URL + '/rest/v1/leaderboard';
+    const RPC_BASE = SUPABASE_URL + '/rest/v1/rpc/';
+    const API_HEADERS = { apikey: SUPABASE_PUBLIC_KEY };
     const goalInput = document.getElementById('goal');
     const playerInput = document.getElementById('player');
+    const playerWrap = document.getElementById('playerWrap');
+    const claimBtn = document.getElementById('claimName');
+    const nameInfo = document.getElementById('nameInfo');
+    const soundToggle = document.getElementById('soundToggle');
     const arena = document.getElementById('arena');
     const buzzer = document.getElementById('buzzer');
     const buzzerText = document.getElementById('buzzerText');
@@ -172,127 +264,488 @@
     const elapsed = document.getElementById('elapsed');
     const deviation = document.getElementById('deviation');
     const resultCaption = document.getElementById('resultCaption');
+    const saveStatus = document.getElementById('saveStatus');
+    const retryBtn = document.getElementById('retry');
     const scoresEl = document.getElementById('scoreRows');
+    const boardInfo = document.getElementById('boardInfo');
     const clearBtn = document.getElementById('clear');
+    const refreshBtn = document.getElementById('refresh');
+    const globalTab = document.getElementById('globalTab');
+    const localTab = document.getElementById('localTab');
     const storageKey = 'zeitgefuehl-challenge-v1';
-    const fmt = (x, digits = 3) => x.toLocaleString('de-DE', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+    const fmt = (x, digits = 3) => x.toLocaleString('de-DE', { minimumFractionDigits: digits, maximumFractionDigits: digits });
     let scores = [];
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      if (Array.isArray(saved)) scores = saved.filter(s => Number.isFinite(s.duration) && Number.isFinite(s.target) && s.target > 0 && typeof s.player === 'string').slice(-500);
+      if (Array.isArray(saved)) scores = saved.filter(s =>
+        Number.isFinite(s.duration) && Number.isFinite(s.target) &&
+        s.target > 0 && typeof s.player === 'string').slice(-500);
     } catch (_) { /* Einige lokale Browser blockieren localStorage. */ }
+
     let runningSince = null;
     let roundGoal = null;
     let roundPlayer = null;
     let lastId = null;
     let attempt = scores.length + 1;
+    let activeTab = 'global';
+    let remoteScores = [];
+    let remoteGoalMs = null;
+    let remoteError = '';
+    let remoteLoading = false;
+    let currentRequest = 0;
+    let currentResultId = null;
+    let goalDebounce = null;
+    let lockedName = '';
+    let namePending = false;
+    const identityKey = 'zeitgefuehl-identity-v2';
+    const soundKey = 'zeitgefuehl-sound-v2';
+    let token = '';
+    let audioCtx = null;
+    let soundEnabled = true;
+    try { soundEnabled = localStorage.getItem(soundKey) !== 'off'; } catch (_) {}
+    soundToggle.setAttribute('aria-pressed', String(soundEnabled));
+    soundToggle.textContent = soundEnabled ? '♪ Ton an' : '♪ Ton aus';
+    let storedIdentity = null;
+    try { storedIdentity = JSON.parse(localStorage.getItem(identityKey) || 'null'); } catch (_) {}
+    if (storedIdentity && typeof storedIdentity.name === 'string' && typeof storedIdentity.token === 'string') {
+      token = storedIdentity.token;
+      playerInput.value = storedIdentity.name;
+    }
+
+    // Frequenztoene ueber WebAudio, erst nach direkter Nutzerinteraktion aktiviert (iOS).
+    function tone(kind) {
+      if (!soundEnabled) return;
+      try {
+        const AudioCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtor) return;
+        if (!audioCtx) audioCtx = new AudioCtor();
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const tones = {start:[510,690,.13], stop:[260,185,.19], success:[740,1000,.15], error:[205,145,.2], tap:[490,650,.08]};
+        const [from,to,length] = tones[kind] || tones.tap;
+        osc.type = kind === 'stop' ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(from, now);
+        osc.frequency.exponentialRampToValueAtTime(to, now + length);
+        gain.gain.setValueAtTime(.0001, now);
+        gain.gain.exponentialRampToValueAtTime(.15, now + .012);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + length);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + length + .025);
+      } catch (_) { /* Bei gesperrter Tonausgabe laeuft das Spiel weiter. */ }
+    }
+    function popBuzzer() {
+      buzzer.classList.remove('pop');
+      void buzzer.offsetWidth;
+      buzzer.classList.add('pop');
+    }
+    function burst() {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const area = arena.getBoundingClientRect();
+      const bb = buzzer.getBoundingClientRect();
+      const cx = bb.left + bb.width / 2 - area.left;
+      const cy = bb.top + bb.height / 2 - area.top;
+      const palette = ['#d7f465','#f9ffe7','#82d7ff','#ffbb60','#ff7583'];
+      for (let i=0; i<22; i++) {
+        const p = document.createElement('span');
+        p.className = 'spark';
+        const angle = Math.PI * 2 * i / 22;
+        const distance = 75 + (i % 5)*19;
+        p.style.setProperty('--x', cx + 'px');
+        p.style.setProperty('--y', cy + 'px');
+        p.style.setProperty('--dx', Math.cos(angle)*distance + 'px');
+        p.style.setProperty('--dy', Math.sin(angle)*distance + 'px');
+        p.style.setProperty('--c',palette[i % palette.length]);
+        arena.append(p);
+        p.addEventListener('animationend', () => p.remove(), {once:true});
+        setTimeout(() => p.remove(), 1000);
+      }
+    }
+    function validUsername(value) {
+      return /^[\p{L}\p{N}_-]{3,24}$/u.test(value);
+    }
+    function newToken() {
+      const bytes = new Uint8Array(32);
+      if (!window.crypto || !crypto.getRandomValues) throw new Error('Sichere Zufallswerte im Browser nicht verfuegbar');
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, x => x.toString(16).padStart(2,'0')).join('');
+    }
+    function setNameInfo(message, state='') {
+      nameInfo.className = 'nameInfo ' + state;
+      nameInfo.textContent = message;
+      playerWrap.classList.toggle('invalid', state === 'err');
+    }
+    function setLockedName(name) {
+      lockedName = name;
+      playerInput.value = name;
+      playerInput.readOnly = true;
+      playerInput.closest('.field').classList.add('lockedName');
+      claimBtn.textContent = 'Ändern';
+      setNameInfo('✓ Weltweit gesichert', 'ok');
+    }
+    async function rpc(fn, body) {
+      const response = await fetch(RPC_BASE + fn, {
+        method: 'POST', headers: {...API_HEADERS, 'Content-Type':'application/json'},
+        body: JSON.stringify(body), cache: 'no-store'
+      });
+      if (!response.ok) {
+        let msg = 'HTTP ' + response.status;
+        try { const data = await response.json(); if (data.message) msg += ': ' + data.message; }
+        catch (_) {}
+        throw new Error(msg);
+      }
+      return await response.json();
+    }
+    async function claimName() {
+      if (runningSince !== null || namePending) return;
+      if (lockedName) {
+        lockedName = '';
+        playerInput.readOnly = false;
+        playerInput.closest('.field').classList.remove('lockedName');
+        claimBtn.textContent = 'Name sichern';
+        setNameInfo('Neuen Namen eingeben und sichern.');
+        playerInput.focus();
+        tone('tap');
+        return;
+      }
+      const name = playerInput.value.trim();
+      if (!validUsername(name)) {
+        setNameInfo('3–24 Zeichen: Buchstaben, Zahlen, _ oder -', 'err');
+        playerInput.focus(); tone('error'); return;
+      }
+      try { if (!token) token = newToken(); } catch (_) {
+        setNameInfo('Für die Registrierung ist HTTPS erforderlich.', 'err'); tone('error'); return;
+      }
+      namePending = true;
+      claimBtn.disabled = true;
+      playerInput.readOnly = true;
+      setNameInfo('Prüfe Benutzername weltweit …');
+      try {
+        const answer = await rpc('claim_challenge_username', {p_username:name,p_token:token});
+        if (answer === 'ok') {
+          try { localStorage.setItem(identityKey, JSON.stringify({name,token})); }
+          catch (_) { throw new Error('Browserspeicher nicht verfügbar. Name kann nicht sicher beibehalten werden.'); }
+          setLockedName(name);
+          status.textContent = 'Name gesichert. Buzzer zum Starten drücken.';
+          tone('success');
+        } else {
+          setNameInfo(answer === 'taken' ? 'Name bereits vergeben. Bitte anderen wählen.' : 'Name ungültig.', 'err');
+          tone('error');
+        }
+      } catch (err) {
+        setNameInfo('Registrierung fehlgeschlagen (' + err.message + '). SQL-Update ausgeführt?', 'err');
+        tone('error');
+      } finally {
+        namePending = false;
+        claimBtn.disabled = false;
+        playerInput.readOnly = !!lockedName;
+      }
+    }
+
 
     function getGoal() {
       const n = Number(goalInput.value.trim().replace(',', '.'));
-      return Number.isFinite(n) && n >= 0.5 && n <= 300 ? n : null;
+      return Number.isFinite(n) && n >= 1 && n <= 300 ? n : null;
     }
-    function refreshGoal() {
-      const n = getGoal();
-      target.textContent = n === null ? '–' : fmt(n, 2) + ' s';
-      goalInput.setAttribute('aria-invalid', n === null ? 'true' : 'false');
-      drawBoard();
+    function goalMs() {
+      const goal = getGoal();
+      return goal === null ? null : Math.round(goal * 1000);
     }
     function save() {
-      try { localStorage.setItem(storageKey, JSON.stringify(scores.slice(-500))); } catch (_) { /* Läuft ohne Speicherung weiter. */ }
+      try { localStorage.setItem(storageKey, JSON.stringify(scores.slice(-500))); }
+      catch (_) { /* Spiel läuft auch ohne dauerhafte lokale Speicherung. */ }
     }
-    function drawBoard() {
-      const selectedGoal = getGoal();
-      const selected = scores.filter(s => selectedGoal !== null && Math.abs(s.target - selectedGoal) < 0.000001)
-        .sort((a, b) => Math.abs(a.duration - a.target) - Math.abs(b.duration - b.target) || a.id - b.id)
-        .slice(0, 10);
+    function localResults() {
+      const selectedGoal = goalMs();
+      const best = new Map();
+      for (const s of scores) {
+        if (selectedGoal === null || Math.round(s.target * 1000) !== selectedGoal) continue;
+        const key = s.player.toLocaleLowerCase('de');
+        const current = best.get(key);
+        if (!current || Math.abs(s.duration - s.target) < Math.abs(current.duration - current.target)) best.set(key, s);
+      }
+      return [...best.values()]
+        .sort((a,b) => Math.abs(a.duration-a.target)-Math.abs(b.duration-b.target) || a.id-b.id)
+        .slice(0,20)
+        .map(s=>({id:s.id,player:s.player,duration:s.duration,target:s.target,
+                  latest:s.id === lastId,uploaded:s.uploaded === true}));
+    }
+    function renderRows(rows, global) {
       scoresEl.replaceChildren();
-      clearBtn.disabled = scores.length === 0 || runningSince !== null;
-      if (selected.length === 0) {
+      if (!rows.length) {
         const div = document.createElement('div');
         div.className = 'empty';
-        div.textContent = 'Noch keine Versuche für diese Zielzeit. Die kleinste Abweichung gewinnt.';
+        div.textContent = global ? 'Noch kein globaler Eintrag für diese Zielzeit.' : 'Noch keine Versuche für diese Zielzeit.';
         scoresEl.append(div);
         return;
       }
-      selected.forEach((s, index) => {
+      rows.forEach((s, i) => {
         const row = document.createElement('div');
-        row.className = 'scoreRow' + (s.id === lastId ? ' latest' : '');
-        const rank = document.createElement('span'); rank.className = 'rank'; rank.textContent = String(index + 1).padStart(2, '0');
-        const player = document.createElement('div'); player.className = 'player'; player.textContent = s.player;
-        const playerSub = document.createElement('div'); playerSub.className = 'playerSub'; playerSub.textContent = 'Gemessen: ' + fmt(s.duration) + ' s';
-        player.append(playerSub);
-        const score = document.createElement('div'); score.className = 'score'; score.textContent = '± ' + fmt(Math.abs(s.duration - s.target)) + ' s';
-        const scoreSub = document.createElement('div'); scoreSub.className = 'scoreSub'; scoreSub.textContent = s.duration < s.target ? 'zu früh' : (s.duration > s.target ? 'zu spät' : 'exakt');
+        row.className = 'scoreRow' + (s.latest ? ' latest' : '');
+        row.style.setProperty('--delay', Math.min(i*22,280) + 'ms');
+        const rank = document.createElement('span');
+        rank.className = 'rank';
+        rank.textContent = String(i + 1).padStart(2, '0');
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.textContent = s.player;
+        const sub = document.createElement('div');
+        sub.className = 'playerSub';
+        sub.textContent = 'Gemessen: ' + fmt(s.duration) + ' s' + (!global && s.uploaded ? ' · global gespeichert' : '');
+        player.append(sub);
+        const score = document.createElement('div');
+        score.className = 'score';
+        const diff = s.duration - s.target;
+        score.textContent = '± ' + fmt(Math.abs(diff)) + ' s';
+        const scoreSub = document.createElement('div');
+        scoreSub.className = 'scoreSub';
+        scoreSub.textContent = diff < -0.0005 ? 'zu früh' : diff > 0.0005 ? 'zu spät' : 'exakt';
         score.append(scoreSub);
         row.append(rank, player, score);
         scoresEl.append(row);
       });
     }
+    function drawBoard() {
+      const global = activeTab === 'global';
+      globalTab.setAttribute('aria-selected', String(global));
+      localTab.setAttribute('aria-selected', String(!global));
+      refreshBtn.hidden = !global;
+      refreshBtn.disabled = remoteLoading;
+      clearBtn.hidden = global;
+      clearBtn.disabled = !scores.length || runningSince !== null;
+      if (!global) {
+        boardInfo.textContent = 'Nur auf diesem Gerät gespeicherte Versuche.';
+        renderRows(localResults(), false);
+        return;
+      }
+      const currentGoal = goalMs();
+      if (currentGoal === null) {
+        boardInfo.textContent = 'Bitte gültige Zielzeit eingeben.';
+        scoresEl.replaceChildren();
+        return;
+      }
+      if (remoteGoalMs !== currentGoal) {
+        boardInfo.textContent = 'Lade globale Ergebnisse für ' + fmt(currentGoal/1000,2) + ' s …';
+        scoresEl.replaceChildren();
+        return;
+      }
+      if (remoteError) {
+        boardInfo.textContent = 'Verbindung fehlgeschlagen. Bitte „Aktualisieren“ drücken.';
+        scoresEl.replaceChildren();
+        const error = document.createElement('div');
+        error.className = 'empty';
+        error.textContent = remoteError;
+        scoresEl.append(error);
+        return;
+      }
+      boardInfo.textContent = (remoteLoading ? 'Aktualisiere … ' : '') +
+        'Weltweite Top 20 für ' + fmt(currentGoal/1000, 2) + ' s · kleinste Abweichung zuerst';
+      renderRows(remoteScores, true);
+    }
+
+    async function refreshGlobal() {
+      const selectedGoalMs = goalMs();
+      const seq = ++currentRequest;
+      if (selectedGoalMs === null) {
+        remoteGoalMs = null;
+        remoteScores = [];
+        remoteLoading = false;
+        drawBoard();
+        return;
+      }
+      remoteLoading = true;
+      remoteError = '';
+      remoteGoalMs = selectedGoalMs;
+      remoteScores = [];
+      drawBoard();
+      try {
+        const data = await rpc('get_challenge_ranking', {p_target_ms: selectedGoalMs});
+        if (!Array.isArray(data)) throw new Error('Ungültiges Antwortformat');
+        if (seq !== currentRequest) return;
+        remoteScores = data.filter(s => Number.isFinite(s.elapsed_ms) && Number.isFinite(s.target_ms))
+          .map(s => ({ player: typeof s.player_name === 'string' ? s.player_name : 'Spieler',
+            duration: s.elapsed_ms / 1000, target: s.target_ms / 1000 }));
+        remoteError = '';
+      } catch (error) {
+        if (seq !== currentRequest) return;
+        remoteError = 'Supabase konnte nicht geladen werden (' + error.message + ').';
+        remoteScores = [];
+      } finally {
+        if (seq === currentRequest) {
+          remoteLoading = false;
+          drawBoard();
+        }
+      }
+    }
+
+    async function submitScore(score) {
+      if (!score || score.pending || score.uploaded) return;
+      if (score.duration < 0 || score.duration > 3600) {
+        saveStatus.textContent = 'Diese Messung liegt außerhalb des erlaubten Speicherbereichs.';
+        saveStatus.classList.add('warn');
+        return;
+      }
+      score.pending = true;
+      retryBtn.hidden = true;
+      const isCurrent = () => currentResultId === score.id;
+      if (isCurrent()) {
+        saveStatus.textContent = 'Speichere Ergebnis in der globalen Bestenliste …';
+        saveStatus.classList.remove('warn');
+      }
+      try {
+        if (!token || !lockedName || score.player !== lockedName) {
+          throw new Error('Benutzername nicht gesichert');
+        }
+        await rpc('submit_challenge_score', {
+          p_username: score.player,
+          p_token: token,
+          p_target_ms: Math.round(score.target * 1000),
+          p_elapsed_ms: Math.round(score.duration * 1000)
+        });
+        score.uploaded = true;
+        save();
+        if (isCurrent()) {
+          saveStatus.textContent = 'Global gespeichert. Dein Ergebnis ist jetzt öffentlich sichtbar.';
+          saveStatus.classList.remove('warn');
+        }
+        if (activeTab === 'global' && goalMs() === Math.round(score.target * 1000)) refreshGlobal();
+        else drawBoard();
+      } catch (error) {
+        if (isCurrent()) {
+          saveStatus.textContent = 'Nicht global gespeichert (' + error.message + '). Lokal bleibt das Ergebnis erhalten.';
+          saveStatus.classList.add('warn');
+          retryBtn.hidden = false;
+        }
+      } finally { score.pending = false; }
+    }
+
+    function refreshGoal() {
+      const n = getGoal();
+      target.textContent = n === null ? '–' : fmt(n, 2) + ' s';
+      goalInput.setAttribute('aria-invalid', String(n === null));
+      drawBoard();
+      window.clearTimeout(goalDebounce);
+      goalDebounce = window.setTimeout(refreshGlobal, 350);
+    }
     function pressBuzzer() {
+      popBuzzer();
       if (runningSince === null) {
+        if (!lockedName || playerInput.value !== lockedName || namePending) {
+          status.textContent = 'Zuerst einen eindeutigen Benutzernamen sichern.';
+          setNameInfo('Benutzername ist Pflicht. Bitte „Name sichern“ drücken.', 'err');
+          tone('error');
+          if (!namePending) playerInput.focus();
+          return;
+        }
         const n = getGoal();
         if (n === null) {
-          status.textContent = 'Bitte eine Zielzeit zwischen 0,5 und 300 Sekunden eingeben.';
+          status.textContent = 'Bitte eine Zielzeit zwischen 1 und 300 Sekunden eingeben.';
           goalInput.focus();
+          tone('error');
           return;
         }
         roundGoal = n;
-        roundPlayer = playerInput.value.trim().slice(0, 32) || 'Versuch ' + attempt;
+        roundPlayer = lockedName;
+        // performance.now() ist eine monotone Zeitquelle und wird erst beim Stopp ausgelesen.
         runningSince = performance.now();
         arena.classList.add('running');
         goalInput.disabled = true;
         playerInput.disabled = true;
+        claimBtn.disabled = true;
         result.hidden = true;
         buzzerText.textContent = 'STOPP';
         buzzerHint.textContent = 'JETZT BUZZERN';
         buzzer.setAttribute('aria-label', 'Zeitmessung stoppen');
         status.textContent = 'ZEIT LÄUFT – ohne Anzeige';
+        tone('start');
         drawBoard();
       } else {
-        // Die Stoppzeit wird direkt im Eventhandler erfasst, ohne Animation oder Timer-Intervalle.
         const duration = (performance.now() - runningSince) / 1000;
         runningSince = null;
         const difference = duration - roundGoal;
         const absDifference = Math.abs(difference);
-        const newId = Date.now() * 1000 + attempt;
-        lastId = newId;
-        scores.push({ id: newId, target: roundGoal, duration, player: roundPlayer });
+        const id = Date.now() * 1000 + attempt;
+        lastId = id;
+        currentResultId = id;
+        const newScore = { id, target: roundGoal, duration, player: roundPlayer, uploaded: false };
+        scores.push(newScore);
         attempt++;
         save();
         arena.classList.remove('running');
         goalInput.disabled = false;
         playerInput.disabled = false;
+        claimBtn.disabled = false;
         buzzerText.textContent = 'START';
         buzzerHint.textContent = 'NÄCHSTER VERSUCH';
         buzzer.setAttribute('aria-label', 'Neue Zeitmessung starten');
         status.textContent = 'Gestoppt. Bereit für den nächsten Versuch.';
+        tone('stop');
+        burst();
         elapsed.textContent = fmt(duration) + ' s';
         deviation.textContent = fmt(absDifference) + ' s';
-        resultCaption.textContent = absDifference < 0.0005 ? 'Zielzeit exakt getroffen.' : fmt(absDifference) + ' Sekunden ' + (difference < 0 ? 'zu früh' : 'zu spät') + '.';
+        resultCaption.textContent = absDifference < 0.0005 ? 'Zielzeit exakt getroffen.' :
+          fmt(absDifference) + ' Sekunden ' + (difference < 0 ? 'zu früh' : 'zu spät') + '.';
         resultTitle.textContent = 'DEIN ERGEBNIS';
         result.hidden = false;
+        saveStatus.textContent = 'Bereite globale Speicherung vor …';
+        saveStatus.classList.remove('warn');
+        retryBtn.hidden = true;
         drawBoard();
+        submitScore(newScore);
       }
     }
+
     buzzer.addEventListener('click', pressBuzzer);
-    goalInput.addEventListener('input', refreshGoal);
-    document.addEventListener('keydown', event => {
-      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || ![' ', 'Enter'].includes(event.key)) return;
-      const active = document.activeElement;
-      if (active === buzzer || active === goalInput || active === playerInput || active === clearBtn || active.tagName === 'BUTTON') return;
-      event.preventDefault();
-      pressBuzzer();
+    claimBtn.addEventListener('click', claimName);
+    playerInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !playerInput.readOnly) { e.preventDefault(); claimName(); }
     });
-    clearBtn.addEventListener('click', () => {
+    playerInput.addEventListener('input', () => {
+      if (!lockedName) setNameInfo('Drücke „Name sichern“ vor dem ersten Versuch.');
+    });
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.setAttribute('aria-pressed', String(soundEnabled));
+      soundToggle.textContent = soundEnabled ? '♪ Ton an' : '♪ Ton aus';
+      try { localStorage.setItem(soundKey, soundEnabled ? 'on' : 'off'); } catch (_) {}
+      tone('tap');
+    });
+    goalInput.addEventListener('input', refreshGoal);
+    refreshBtn.addEventListener('click', () => { tone('tap'); refreshGlobal(); });
+    globalTab.addEventListener('click', () => { tone('tap'); activeTab = 'global'; drawBoard(); if (remoteGoalMs !== goalMs() || remoteError) refreshGlobal(); });
+    localTab.addEventListener('click', () => { tone('tap'); activeTab = 'local'; drawBoard(); });
+    retryBtn.addEventListener('click', () => {
+      const score = scores.find(s => s.id === currentResultId);
+      if (score) submitScore(score);
+    });
+    clearBtn.addEventListener('click', () => { tone('tap');
       if (runningSince !== null || scores.length === 0) return;
-      if (!window.confirm('Wirklich die gesamte Bestenliste löschen?')) return;
+      if (!window.confirm('Wirklich nur die lokale Bestenliste löschen? Globale Einträge bleiben bestehen.')) return;
       scores = [];
       lastId = null;
       attempt = 1;
       save();
       drawBoard();
     });
-    refreshGoal();
+    document.addEventListener('keydown', event => {
+      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || ![' ', 'Enter'].includes(event.key)) return;
+      const active = document.activeElement;
+      if (active === buzzer || active === goalInput || active === playerInput ||
+          active === clearBtn || active?.tagName === 'BUTTON') return;
+      event.preventDefault();
+      pressBuzzer();
+    });
+    window.setInterval(() => {
+      if (!document.hidden && !remoteLoading && activeTab === 'global' && runningSince === null && goalMs() !== null) refreshGlobal();
+    }, 30000);
+    target.textContent = fmt(getGoal(), 2) + ' s';
+    refreshGlobal();
+    if (storedIdentity && playerInput.value) {
+      // Bereits gesicherte Namen werden beim Oeffnen online bestaetigt.
+      claimName();
+    }
   </script>
 </body>
 </html>
