@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101318">
+  <meta name="description" content="Zeitgefühl-Challenge: Stoppe eine unsichtbare Uhr möglichst genau zur Zielzeit.">
+  <title>Zeitgefühl – Buzzer Challenge</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-synthesis: none;
+      --bg: #101318;
+      --surface: #1a2028;
+      --surface2: #222a34;
+      --line: #323d49;
+      --fg: #f3f5f8;
+      --muted: #a3afbd;
+      --accent: #d7f465;
+      --red: #ff5d67;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-width: 300px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--fg);
+      background: radial-gradient(ellipse at 50% -12%, #2b3940 0, transparent 52%), var(--bg);
+    }
+    button, input { font: inherit; }
+    .app {
+      max-width: 720px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: auto;
+      padding: max(24px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
+    }
+    header { text-align: center; margin-bottom: 22px; }
+    .eyebrow { font-size: 11px; font-weight: 850; letter-spacing: .25em; color: var(--accent); }
+    h1 { margin: 10px 0 6px; font-size: clamp(29px, 6vw, 42px); letter-spacing: -.055em; }
+    .intro { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .settings { display: grid; grid-template-columns: 1fr 1.15fr; gap: 12px; margin: 22px auto 14px; }
+    .field { min-width: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 650; color: var(--muted); margin-bottom: 7px; }
+    .inputwrap { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+    .inputwrap:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .inputwrap input { width: 100%; height: 52px; min-width: 0; padding: 0 14px; background: transparent; border: none; outline: none; color: var(--fg); font-weight: 750; font-size: 18px; }
+    .inputwrap input::placeholder { color: #7f8b98; font-weight: 450; font-size: 14px; }
+    .unit { padding-right: 14px; color: var(--muted); font-weight: 750; font-size: 15px; }
+    input:disabled { opacity: .55; }
+    .arena { text-align: center; padding: 20px 16px 21px; background: linear-gradient(165deg, #1b222b, #151a21); border: 1px solid #36414c; border-radius: 24px; }
+    .targetLabel { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .17em; color: var(--muted); }
+    .target { font-size: clamp(35px, 9vw, 56px); font-variant-numeric: tabular-nums; font-weight: 850; letter-spacing: -.055em; margin: 6px 0 1px; }
+    .status { min-height: 22px; font-size: 13px; font-weight: 700; color: var(--muted); margin: 4px 0 18px; }
+    .buzzer {
+      display: grid; place-content: center;
+      width: min(68vw, 255px); height: min(68vw, 255px);
+      margin: 0 auto;
+      padding: 10px;
+      border: 11px solid #a0b94b;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 21%, #edffb1, #d7f465 37%, #9abb27 100%);
+      box-shadow: 0 11px 0 #677c22, 0 21px 31px #0009, inset 0 2px 2px #ffffffa6;
+      color: #1c260b;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .1s, border-color .1s, box-shadow .1s;
+    }
+    .buzzer:active { transform: translateY(6px); box-shadow: 0 5px 0 #677c22, 0 10px 17px #0009, inset 0 2px 2px #ffffffa6; }
+    .buzzer:focus-visible { outline: 3px solid white; outline-offset: 8px; }
+    .buzzerText { font-size: clamp(29px, 7vw, 43px); font-weight: 950; letter-spacing: -.035em; }
+    .buzzerHint { font-size: 12px; font-weight: 800; letter-spacing: .1em; margin-top: 6px; }
+    .running .buzzer { background: radial-gradient(circle at 32% 21%, #ffb5b6, #ff5d67 39%, #b3273a 100%); border-color: #b93e4b; color: #fff; box-shadow: 0 11px 0 #76212c, 0 21px 31px #0009, inset 0 2px 2px #ffffff73; }
+    .running .buzzer:active { transform: translateY(6px); box-shadow: 0 5px 0 #76212c, 0 10px 17px #0009; }
+    .running .status { color: #ff949e; }
+    .footerNote { font-size: 12px; margin-top: 23px; line-height: 1.5; color: var(--muted); }
+    .result { margin-top: 15px; border: 1px solid #62733d; border-radius: 18px; background: #242e21; padding: 17px 20px; }
+    .result[hidden] { display: none; }
+    .resultHead { font-size: 12px; font-weight: 850; letter-spacing: .14em; color: #d7f465; }
+    .resultGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; }
+    .resultLabel { font-size: 12px; color: #b2c3a5; margin-bottom: 4px; }
+    .resultNum { font-size: clamp(20px, 5vw, 30px); font-weight: 850; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .resultCaption { margin: 10px 0 0; font-size: 13px; color: #e6efdc; }
+    .board { margin-top: 25px; }
+    .boardHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .clear { padding: 7px 0 7px 10px; background: none; border: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 12px; }
+    .clear:hover { color: var(--fg); }
+    .clear:disabled { opacity: .4; cursor: default; }
+    .scoreRows { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; }
+    .empty { text-align: center; padding: 27px 12px; font-size: 13px; color: var(--muted); }
+    .scoreRow { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 12px 15px; }
+    .scoreRow + .scoreRow { border-top: 1px solid var(--line); }
+    .scoreRow.latest { background: #273329; }
+    .rank { font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 850; color: var(--accent); }
+    .player { min-width: 0; font-size: 14px; font-weight: 750; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .playerSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
+    .score { font-size: 15px; font-weight: 850; font-variant-numeric: tabular-nums; text-align: right; }
+    .scoreSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
+    @media (max-width: 390px) {
+      .settings { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .app { padding-left: 14px; padding-right: 14px; }
+      .arena { padding-left: 10px; padding-right: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .buzzer { transition: none; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="eyebrow">TIME CHALLENGE</div>
+      <h1>Wie gut ist dein Zeitgefühl?</h1>
+      <p class="intro">Starte den Buzzer und stoppe ihn möglichst genau zur Zielzeit. Die Uhr bleibt unsichtbar.</p>
+    </header>
+
+    <section class="settings" aria-label="Spiel-Einstellungen">
+      <div class="field">
+        <label for="goal">Zielzeit</label>
+        <div class="inputwrap"><input id="goal" type="number" min="0.5" max="300" step="0.1" value="10" inputmode="decimal" aria-describedby="validInfo"><span class="unit">Sek.</span></div>
+      </div>
+      <div class="field">
+        <label for="player">Name (optional)</label>
+        <div class="inputwrap"><input id="player" type="text" maxlength="32" autocomplete="off" placeholder="Spielername"></div>
+      </div>
+    </section>
+
+    <section class="arena" id="arena" aria-label="Zeitgefühl-Challenge">
+      <div class="targetLabel">DEIN ZIEL</div>
+      <div class="target" id="target">10,00 s</div>
+      <div class="status" id="status" aria-live="polite">Bereit? Starte mit einem Druck.</div>
+      <button class="buzzer" id="buzzer" type="button" aria-label="Zeitmessung starten">
+        <span class="buzzerText" id="buzzerText">START</span>
+        <span class="buzzerHint" id="buzzerHint">BUZZER DRÜCKEN</span>
+      </button>
+      <div class="footerNote" id="instruction">1. Druck: Start &nbsp;·&nbsp; 2. Druck: Stopp<br>Kein Countdown, keine sichtbare laufende Zeit.</div>
+    </section>
+
+    <section class="result" id="result" hidden aria-live="polite">
+      <div class="resultHead" id="resultTitle">ERGEBNIS</div>
+      <div class="resultGrid">
+        <div><div class="resultLabel">Deine Zeit</div><div class="resultNum" id="elapsed">–</div></div>
+        <div><div class="resultLabel">Abweichung</div><div class="resultNum" id="deviation">–</div></div>
+      </div>
+      <p class="resultCaption" id="resultCaption"></p>
+    </section>
+
+    <section class="board" aria-label="Bestenliste">
+      <div class="boardHead"><h2>Bestenliste</h2><button class="clear" id="clear" type="button">Liste löschen</button></div>
+      <div class="scoreRows" id="scoreRows"><div class="empty">Noch keine Versuche. Die kleinste Abweichung gewinnt.</div></div>
+    </section>
+    <p class="intro" id="validInfo" style="font-size:11px;margin-top:14px">Zielzeit: 0,5 bis 300 Sekunden. Jeder Buzzer-Druck zählt. Die Bestenliste wird auf diesem Gerät gespeichert, sofern der Browser dies zulässt.</p>
+  </main>
+
+  <script>
+    'use strict';
+    const goalInput = document.getElementById('goal');
+    const playerInput = document.getElementById('player');
+    const arena = document.getElementById('arena');
+    const buzzer = document.getElementById('buzzer');
+    const buzzerText = document.getElementById('buzzerText');
+    const buzzerHint = document.getElementById('buzzerHint');
+    const status = document.getElementById('status');
+    const target = document.getElementById('target');
+    const result = document.getElementById('result');
+    const resultTitle = document.getElementById('resultTitle');
+    const elapsed = document.getElementById('elapsed');
+    const deviation = document.getElementById('deviation');
+    const resultCaption = document.getElementById('resultCaption');
+    const scoresEl = document.getElementById('scoreRows');
+    const clearBtn = document.getElementById('clear');
+    const storageKey = 'zeitgefuehl-challenge-v1';
+    const fmt = (x, digits = 3) => x.toLocaleString('de-DE', {minimumFractionDigits: digits, maximumFractionDigits: digits});
+    let scores = [];
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (Array.isArray(saved)) scores = saved.filter(s => Number.isFinite(s.duration) && Number.isFinite(s.target) && s.target > 0 && typeof s.player === 'string').slice(-500);
+    } catch (_) { /* Einige lokale Browser blockieren localStorage. */ }
+    let runningSince = null;
+    let roundGoal = null;
+    let roundPlayer = null;
+    let lastId = null;
+    let attempt = scores.length + 1;
+
+    function getGoal() {
+      const n = Number(goalInput.value.trim().replace(',', '.'));
+      return Number.isFinite(n) && n >= 0.5 && n <= 300 ? n : null;
+    }
+    function refreshGoal() {
+      const n = getGoal();
+      target.textContent = n === null ? '–' : fmt(n, 2) + ' s';
+      goalInput.setAttribute('aria-invalid', n === null ? 'true' : 'false');
+      drawBoard();
+    }
+    function save() {
+      try { localStorage.setItem(storageKey, JSON.stringify(scores.slice(-500))); } catch (_) { /* Läuft ohne Speicherung weiter. */ }
+    }
+    function drawBoard() {
+      const selectedGoal = getGoal();
+      const selected = scores.filter(s => selectedGoal !== null && Math.abs(s.target - selectedGoal) < 0.000001)
+        .sort((a, b) => Math.abs(a.duration - a.target) - Math.abs(b.duration - b.target) || a.id - b.id)
+        .slice(0, 10);
+      scoresEl.replaceChildren();
+      clearBtn.disabled = scores.length === 0 || runningSince !== null;
+      if (selected.length === 0) {
+        const div = document.createElement('div');
+        div.className = 'empty';
+        div.textContent = 'Noch keine Versuche für diese Zielzeit. Die kleinste Abweichung gewinnt.';
+        scoresEl.append(div);
+        return;
+      }
+      selected.forEach((s, index) => {
+        const row = document.createElement('div');
+        row.className = 'scoreRow' + (s.id === lastId ? ' latest' : '');
+        const rank = document.createElement('span'); rank.className = 'rank'; rank.textContent = String(index + 1).padStart(2, '0');
+        const player = document.createElement('div'); player.className = 'player'; player.textContent = s.player;
+        const playerSub = document.createElement('div'); playerSub.className = 'playerSub'; playerSub.textContent = 'Gemessen: ' + fmt(s.duration) + ' s';
+        player.append(playerSub);
+        const score = document.createElement('div'); score.className = 'score'; score.textContent = '± ' + fmt(Math.abs(s.duration - s.target)) + ' s';
+        const scoreSub = document.createElement('div'); scoreSub.className = 'scoreSub'; scoreSub.textContent = s.duration < s.target ? 'zu früh' : (s.duration > s.target ? 'zu spät' : 'exakt');
+        score.append(scoreSub);
+        row.append(rank, player, score);
+        scoresEl.append(row);
+      });
+    }
+    function pressBuzzer() {
+      if (runningSince === null) {
+        const n = getGoal();
+        if (n === null) {
+          status.textContent = 'Bitte eine Zielzeit zwischen 0,5 und 300 Sekunden eingeben.';
+          goalInput.focus();
+          return;
+        }
+        roundGoal = n;
+        roundPlayer = playerInput.value.trim().slice(0, 32) || 'Versuch ' + attempt;
+        runningSince = performance.now();
+        arena.classList.add('running');
+        goalInput.disabled = true;
+        playerInput.disabled = true;
+        result.hidden = true;
+        buzzerText.textContent = 'STOPP';
+        buzzerHint.textContent = 'JETZT BUZZERN';
+        buzzer.setAttribute('aria-label', 'Zeitmessung stoppen');
+        status.textContent = 'ZEIT LÄUFT – ohne Anzeige';
+        drawBoard();
+      } else {
+        // Die Stoppzeit wird direkt im Eventhandler erfasst, ohne Animation oder Timer-Intervalle.
+        const duration = (performance.now() - runningSince) / 1000;
+        runningSince = null;
+        const difference = duration - roundGoal;
+        const absDifference = Math.abs(difference);
+        const newId = Date.now() * 1000 + attempt;
+        lastId = newId;
+        scores.push({ id: newId, target: roundGoal, duration, player: roundPlayer });
+        attempt++;
+        save();
+        arena.classList.remove('running');
+        goalInput.disabled = false;
+        playerInput.disabled = false;
+        buzzerText.textContent = 'START';
+        buzzerHint.textContent = 'NÄCHSTER VERSUCH';
+        buzzer.setAttribute('aria-label', 'Neue Zeitmessung starten');
+        status.textContent = 'Gestoppt. Bereit für den nächsten Versuch.';
+        elapsed.textContent = fmt(duration) + ' s';
+        deviation.textContent = fmt(absDifference) + ' s';
+        resultCaption.textContent = absDifference < 0.0005 ? 'Zielzeit exakt getroffen.' : fmt(absDifference) + ' Sekunden ' + (difference < 0 ? 'zu früh' : 'zu spät') + '.';
+        resultTitle.textContent = 'DEIN ERGEBNIS';
+        result.hidden = false;
+        drawBoard();
+      }
+    }
+    buzzer.addEventListener('click', pressBuzzer);
+    goalInput.addEventListener('input', refreshGoal);
+    document.addEventListener('keydown', event => {
+      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || ![' ', 'Enter'].includes(event.key)) return;
+      const active = document.activeElement;
+      if (active === buzzer || active === goalInput || active === playerInput || active === clearBtn || active.tagName === 'BUTTON') return;
+      event.preventDefault();
+      pressBuzzer();
+    });
+    clearBtn.addEventListener('click', () => {
+      if (runningSince !== null || scores.length === 0) return;
+      if (!window.confirm('Wirklich die gesamte Bestenliste löschen?')) return;
+      scores = [];
+      lastId = null;
+      attempt = 1;
+      save();
+      drawBoard();
+    });
+    refreshGoal();
+  </script>
+</body>
+</html>
