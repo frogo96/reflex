@@ -194,6 +194,18 @@ input { -webkit-tap-highlight-color:transparent; }
 }
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}.spark{display:none;}}
 
+
+/* Geschuetzte Admin-Verwaltung, ohne Einfluss auf den Spielbereich */
+.adminMeta {margin-top:4px;}
+.adminPanel {max-width:540px;padding:12px 0 7px;display:grid;gap:11px;}
+.adminForm {display:grid;gap:9px;}
+.adminPanel input {height:45px;width:100%;border-radius:13px;border:1px solid rgba(188,210,249,.24);background:rgba(11,20,41,.65);color:var(--ink);padding:0 13px;font-size:16px;}
+.adminPanel input:focus-visible {outline:2px solid #a6dcff;outline-offset:1px;}
+.adminPanel .glassButton {min-height:42px;padding:0 14px;font-size:13px;font-weight:700;}
+.adminControlRow {display:flex;gap:9px;flex-wrap:wrap;}
+.adminReset {color:#ffd7df!important;border-color:rgba(255,135,158,.5)!important;}
+.adminStatus {min-height:15px;font-size:12px;color:var(--muted);line-height:1.4;margin:0;}
+
 </style>
 </head>
 <body>
@@ -266,6 +278,22 @@ input { -webkit-tap-highlight-color:transparent; }
       </section>
     </div>
     <details class="meta"><summary>Info</summary><p id="validInfo" class="validInfo">Zielzeit: 1–300 Sekunden. Benutzernamen sind weltweit eindeutig und an diesen Browser gebunden. Ergebnisse sind technisch manipulierbar.</p></details>
+
+    <details class="meta adminMeta">
+      <summary>Admin</summary>
+      <div class="adminPanel">
+        <form class="adminForm" id="adminLoginForm">
+          <input id="adminEmail" type="email" placeholder="Admin-E-Mail" autocomplete="username" aria-label="Admin-E-Mail" required>
+          <input id="adminPassword" type="password" placeholder="Passwort" autocomplete="current-password" aria-label="Admin-Passwort" required>
+          <button class="glassButton" type="submit" id="adminLogin">Admin anmelden</button>
+        </form>
+        <div class="adminControlRow" id="adminControls" hidden>
+          <button class="glassButton adminReset" id="adminReset" type="button">Globale Bestenliste löschen</button>
+          <button class="glassButton" id="adminLogout" type="button">Abmelden</button>
+        </div>
+        <p class="adminStatus" id="adminStatus" role="status"></p>
+      </div>
+    </details>
   </main>
 
 <script>
@@ -775,6 +803,91 @@ input { -webkit-tap-highlight-color:transparent; }
       // Bereits gesicherte Namen werden beim Oeffnen online bestaetigt.
       claimName();
     }
+
+    // Admin-Login: Supabase Auth, keine privilegierten Zugangsdaten im Quellcode.
+    // Die SQL-Funktion prueft die Admin-User-ID zusaetzlich auf dem Server.
+    const adminForm = document.getElementById('adminLoginForm');
+    const adminEmail = document.getElementById('adminEmail');
+    const adminPassword = document.getElementById('adminPassword');
+    const adminLogin = document.getElementById('adminLogin');
+    const adminControls = document.getElementById('adminControls');
+    const adminReset = document.getElementById('adminReset');
+    const adminLogout = document.getElementById('adminLogout');
+    const adminStatus = document.getElementById('adminStatus');
+    let adminAccessToken = null;
+
+    function setAdminSession(loggedIn) {
+      adminForm.hidden = loggedIn;
+      adminControls.hidden = !loggedIn;
+      if (!loggedIn) adminAccessToken = null;
+    }
+    async function adminRpc(name) {
+      if (!adminAccessToken) throw new Error('Nicht angemeldet.');
+      const response = await fetch(RPC_BASE + name, {
+        method:'POST',
+        headers:{...API_HEADERS, Authorization:'Bearer ' + adminAccessToken, 'Content-Type':'application/json'},
+        body:'{}',
+        cache:'no-store'
+      });
+      const raw = await response.text();
+      let data;
+      try { data = raw ? JSON.parse(raw) : null; } catch (_) { data = raw; }
+      if (!response.ok) {
+        if (response.status === 401) setAdminSession(false);
+        throw new Error(data?.message || data?.error_description || 'HTTP ' + response.status);
+      }
+      return data;
+    }
+    adminForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (adminLogin.disabled) return;
+      adminLogin.disabled = true;
+      adminStatus.textContent = 'Prüfe Admin-Zugang …';
+      try {
+        const response = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+          method:'POST',
+          headers:{...API_HEADERS,'Content-Type':'application/json'},
+          body:JSON.stringify({email:adminEmail.value.trim(),password:adminPassword.value}),
+          cache:'no-store'
+        });
+        const data = await response.json();
+        if (!response.ok || !data.access_token)
+          throw new Error(data.msg || data.error_description || data.message || 'Anmeldung fehlgeschlagen.');
+        adminAccessToken = data.access_token;
+        adminPassword.value = '';
+        const isAdmin = await adminRpc('reflex_is_admin');
+        if (isAdmin !== true) throw new Error('Dieses Konto ist nicht als Admin freigeschaltet.');
+        setAdminSession(true);
+        adminStatus.textContent = 'Als Administrator angemeldet.';
+        tone('success');
+      } catch (error) {
+        setAdminSession(false);
+        adminPassword.value = '';
+        adminStatus.textContent = 'Admin-Anmeldung fehlgeschlagen: ' + error.message;
+      } finally { adminLogin.disabled = false; }
+    });
+    adminReset.addEventListener('click', async () => {
+      if (!adminAccessToken || adminReset.disabled) return;
+      const confirmation = window.prompt('ALLE globalen Ergebnisse für ALLE Zielzeiten dauerhaft löschen?\nBenutzernamen und lokale Ergebnisse bleiben erhalten.\nZur Bestätigung RESET eingeben:');
+      if (confirmation !== 'RESET') return;
+      adminReset.disabled = true;
+      adminStatus.textContent = 'Lösche globale Ergebnisse …';
+      try {
+        await adminRpc('reflex_reset_global');
+        adminStatus.textContent = 'Globale Bestenliste wurde vollständig geleert.';
+        tone('success');
+        await refreshGlobal();
+      } catch (error) {
+        adminStatus.textContent = 'Zurücksetzen fehlgeschlagen: ' + error.message;
+        tone('error');
+      } finally { adminReset.disabled = false; }
+    });
+    adminLogout.addEventListener('click', () => {
+      setAdminSession(false);
+      adminPassword.value = '';
+      adminStatus.textContent = 'Abgemeldet.';
+    });
+
 </script>
 </body>
 </html>
