@@ -3,244 +3,409 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101318">
-  <meta name="description" content="Zeitgefühl-Challenge: Stoppe eine unsichtbare Uhr möglichst genau zur Zielzeit.">
-  <title>Zeitgefühl – Buzzer Challenge</title>
+  <meta name="theme-color" content="#140a22">
+  <meta name="description" content="Reflex-Zeitkampf: Stoppe die unsichtbare Uhr möglichst genau zur Zielzeit.">
+  <title>Reflex – Zeitkampf</title>
   <style>
     :root {
       color-scheme: dark;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      font-synthesis: none;
-      --bg: #101318;
-      --surface: #1a2028;
-      --surface2: #222a34;
-      --line: #323d49;
-      --fg: #f3f5f8;
-      --muted: #a3afbd;
-      --accent: #d7f465;
-      --red: #ff5d67;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: #0a0611;
+      --bg2: #160b28;
+      --surface: rgba(18, 16, 38, 0.88);
+      --surface-2: rgba(29, 23, 56, 0.95);
+      --line: rgba(160, 116, 255, 0.24);
+      --line-strong: rgba(115, 228, 255, 0.42);
+      --text: #f8f4ff;
+      --muted: #b6b0d1;
+      --cyan: #73e4ff;
+      --pink: #ff5fc7;
+      --orange: #ffb04d;
+      --lime: #c7ff4a;
+      --red: #ff6b7d;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
     }
     * { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     body {
       margin: 0;
-      min-width: 300px;
+      min-width: 320px;
       min-height: 100vh;
       min-height: 100dvh;
-      color: var(--fg);
-      background: radial-gradient(ellipse at 50% -12%, #2b3940 0, transparent 52%), var(--bg);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,95,199,.18), transparent 30%),
+        radial-gradient(circle at 85% 12%, rgba(115,228,255,.14), transparent 26%),
+        radial-gradient(circle at 50% 120%, rgba(255,176,77,.14), transparent 35%),
+        linear-gradient(180deg, #09060f 0%, #12081d 50%, #0c0918 100%);
+      overflow-x: hidden;
     }
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .55;
+    }
+    body::before {
+      top: -120px; right: -120px; width: 320px; height: 320px;
+      border-radius: 32% 68% 61% 39% / 38% 33% 67% 62%;
+      background: radial-gradient(circle at 35% 35%, rgba(115,228,255,.5), rgba(115,228,255,.08) 60%, transparent 70%);
+      filter: blur(12px);
+      animation: drift 13s ease-in-out infinite alternate;
+    }
+    body::after {
+      left: -90px; bottom: -70px; width: 280px; height: 280px;
+      border-radius: 57% 43% 39% 61% / 58% 47% 53% 42%;
+      background: radial-gradient(circle at 50% 50%, rgba(255,95,199,.45), rgba(255,95,199,.08) 62%, transparent 72%);
+      filter: blur(18px);
+      animation: drift 16s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes drift { from { transform: translateY(0) rotate(0deg) scale(1); } to { transform: translateY(24px) rotate(20deg) scale(1.08); } }
+
     button, input { font: inherit; }
-    .app {
-      max-width: 720px;
-      min-height: 100vh;
-      min-height: 100dvh;
-      margin: auto;
-      padding: max(24px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
-    }
-    header { text-align: center; margin-bottom: 22px; }
-    .eyebrow { font-size: 11px; font-weight: 850; letter-spacing: .25em; color: var(--accent); }
-    h1 { margin: 10px 0 6px; font-size: clamp(29px, 6vw, 42px); letter-spacing: -.055em; }
-    .intro { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
-    .settings { display: grid; grid-template-columns: 1fr 1.15fr; gap: 12px; margin: 22px auto 14px; }
-    .field { min-width: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 650; color: var(--muted); margin-bottom: 7px; }
-    .inputwrap { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
-    .inputwrap:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .inputwrap input { width: 100%; height: 52px; min-width: 0; padding: 0 14px; background: transparent; border: none; outline: none; color: var(--fg); font-weight: 750; font-size: 18px; }
-    .inputwrap input::placeholder { color: #7f8b98; font-weight: 450; font-size: 14px; }
-    .unit { padding-right: 14px; color: var(--muted); font-weight: 750; font-size: 15px; }
-    input:disabled { opacity: .55; }
-    .arena { text-align: center; padding: 20px 16px 21px; background: linear-gradient(165deg, #1b222b, #151a21); border: 1px solid #36414c; border-radius: 24px; }
-    .targetLabel { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .17em; color: var(--muted); }
-    .target { font-size: clamp(35px, 9vw, 56px); font-variant-numeric: tabular-nums; font-weight: 850; letter-spacing: -.055em; margin: 6px 0 1px; }
-    .status { min-height: 22px; font-size: 13px; font-weight: 700; color: var(--muted); margin: 4px 0 18px; }
-    .buzzer {
-      display: grid; place-content: center;
-      width: min(68vw, 255px); height: min(68vw, 255px);
-      margin: 0 auto;
-      padding: 10px;
-      border: 11px solid #a0b94b;
-      border-radius: 50%;
-      background: radial-gradient(circle at 32% 21%, #edffb1, #d7f465 37%, #9abb27 100%);
-      box-shadow: 0 11px 0 #677c22, 0 21px 31px #0009, inset 0 2px 2px #ffffffa6;
-      color: #1c260b;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-      transition: background .1s, border-color .1s, box-shadow .1s;
-    }
-    .buzzer:active { transform: translateY(6px); box-shadow: 0 5px 0 #677c22, 0 10px 17px #0009, inset 0 2px 2px #ffffffa6; }
-    .buzzer:focus-visible { outline: 3px solid white; outline-offset: 8px; }
-    .buzzerText { font-size: clamp(29px, 7vw, 43px); font-weight: 950; letter-spacing: -.035em; }
-    .buzzerHint { font-size: 12px; font-weight: 800; letter-spacing: .1em; margin-top: 6px; }
-    .running .buzzer { background: radial-gradient(circle at 32% 21%, #ffb5b6, #ff5d67 39%, #b3273a 100%); border-color: #b93e4b; color: #fff; box-shadow: 0 11px 0 #76212c, 0 21px 31px #0009, inset 0 2px 2px #ffffff73; }
-    .running .buzzer:active { transform: translateY(6px); box-shadow: 0 5px 0 #76212c, 0 10px 17px #0009; }
-    .running .status { color: #ff949e; }
-    .footerNote { font-size: 12px; margin-top: 23px; line-height: 1.5; color: var(--muted); }
-    .result { margin-top: 15px; border: 1px solid #62733d; border-radius: 18px; background: #242e21; padding: 17px 20px; }
-    .result[hidden] { display: none; }
-    .resultHead { font-size: 12px; font-weight: 850; letter-spacing: .14em; color: #d7f465; }
-    .resultGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 12px; }
-    .resultLabel { font-size: 12px; color: #b2c3a5; margin-bottom: 4px; }
-    .resultNum { font-size: clamp(20px, 5vw, 30px); font-weight: 850; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
-    .resultCaption { margin: 10px 0 0; font-size: 13px; color: #e6efdc; }
-    .board { margin-top: 25px; }
-    .boardHead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
-    h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
-    .clear { padding: 7px 0 7px 10px; background: none; border: none; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 12px; }
-    .clear:hover { color: var(--fg); }
-    .clear:disabled { opacity: .4; cursor: default; }
-    .scoreRows { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; }
-    .empty { text-align: center; padding: 27px 12px; font-size: 13px; color: var(--muted); }
-    .scoreRow { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 12px 15px; }
-    .scoreRow + .scoreRow { border-top: 1px solid var(--line); }
-    .scoreRow.latest { background: #273329; }
-    .rank { font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 850; color: var(--accent); }
-    .player { min-width: 0; font-size: 14px; font-weight: 750; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .playerSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
-    .score { font-size: 15px; font-weight: 850; font-variant-numeric: tabular-nums; text-align: right; }
-    .scoreSub { font-size: 11px; font-weight: 450; color: var(--muted); margin-top: 3px; }
-
-    .boardActions { display: flex; align-items: center; gap: 10px; }
-    .tabs { display: flex; gap: 6px; padding: 4px; background: #10151b; border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; }
-    .tab { flex: 1; background: none; border: 0; border-radius: 10px; padding: 11px 8px; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 700; }
-    .tab[aria-selected="true"] { background: #2b3640; color: var(--fg); }
-    .tab:focus-visible, .miniButton:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .miniButton { border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; background: var(--surface2); color: var(--fg); cursor: pointer; font-size: 12px; font-weight: 750; }
-    .miniButton:disabled { opacity: .5; cursor: default; }
-    .boardInfo { color: var(--muted); min-height: 18px; font-size: 12px; margin: 0 0 10px; }
-    .saveStatus { font-size: 12px; margin: 12px 0 0; color: #d7f465; line-height: 1.45; }
-    .saveStatus.warn { color: #ffacb3; }
-    .retryButton { margin-top: 10px; }
-    .scoreRow .playerSub { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    [hidden] { display: none !important; }
-
-    /* Interaktionsfeedback ohne sichtbaren Zeitverlauf */
     button { -webkit-tap-highlight-color: transparent; }
-    .inputwrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px #d7f4651c; }
-    .inputwrap.invalid { border-color: var(--red); box-shadow: 0 0 0 2px #ff5d6722; }
-    .nameControls { display:flex; align-items:center; gap:10px; margin: 8px 0 0; }
-    .nameInfo { flex:1; min-height:20px; font-size:11px; line-height:1.4; color:var(--muted); }
-    .nameInfo.ok { color:var(--accent); }
-    .nameInfo.err { color:#ff9ba6; }
-    .nameButton { flex-shrink:0; white-space:nowrap; }
-    #player[readonly] { color:var(--accent); opacity:1; }
-    .lockedName .inputwrap { border-color:#829e3d; box-shadow:inset 0 0 18px #d7f4650a; }
-    .statusArea { min-height: 21px; }
-    .controls { display:flex; justify-content:center; margin:14px 0 0; }
-    button.miniButton, button.tab, button.clear {
-      transition: background-color .2s, border-color .2s, color .2s, transform .16s, box-shadow .2s;
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 16px max(34px, env(safe-area-inset-bottom));
     }
-    .miniButton:hover:not(:disabled), .miniButton:focus-visible, .clear:focus-visible {
-      border-color:var(--accent); box-shadow:0 0 0 3px #d7f46520; color:var(--accent);
+    .shell {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 30px;
+      background: linear-gradient(180deg, rgba(20,14,38,.92), rgba(11,9,24,.92));
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
     }
-    .miniButton:active:not(:disabled), .tab:active, .clear:active { transform:scale(.95); }
-    .tab:hover { color:var(--fg); background:#25303b; }
-    .tab[aria-selected="true"] {
-      background:linear-gradient(145deg,#e6ff94,#b9de37); color:#26330d;
-      box-shadow:0 3px 12px #9ec33740;
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0, rgba(255,255,255,.04) 49.5%, transparent 50%, transparent 100%),
+        linear-gradient(transparent 0, rgba(255,255,255,.03) 49.5%, transparent 50%, transparent 100%);
+      background-size: 46px 46px;
+      opacity: .08;
+      pointer-events: none;
     }
-    .buzzer { position:relative; isolation:isolate; transition: transform .12s, box-shadow .2s, filter .2s, background .2s; }
-    .buzzer:hover { filter:brightness(1.07); box-shadow:0 11px 0 #677c22,0 24px 43px #000a,0 0 28px #d7f46545; }
+    .topbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(255,255,255,.06);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brandBadge {
+      width: 42px; height: 42px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--pink), var(--orange));
+      display: grid; place-items: center; color: #130818; font-weight: 900; letter-spacing: -.04em;
+      box-shadow: 0 8px 26px rgba(255,95,199,.34);
+    }
+    .eyebrow { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--cyan); font-weight: 800; }
+    .titleWrap h1 { margin: 2px 0 0; font-size: clamp(28px, 6vw, 48px); line-height: .94; letter-spacing: -.055em; }
+    .titleWrap p { margin: 7px 0 0; color: var(--muted); font-size: 14px; max-width: 540px; line-height: 1.45; }
+    .topRight { display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+
+    .content { padding: 18px; display: grid; gap: 18px; }
+    .grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 18px; align-items: start; }
+    .panel {
+      position: relative;
+      border-radius: 26px;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(27,22,50,.96), rgba(14,11,29,.96));
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    .panel::after {
+      content: "";
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,.03);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    }
+    .panelHeader { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom: 14px; }
+    .panelTitle { margin:0; font-size: 17px; font-weight: 800; letter-spacing:-.02em; }
+    .panelSub { margin:4px 0 0; color: var(--muted); font-size: 12px; }
+
+    .settings { display: grid; gap: 12px; }
+    .field { min-width: 0; }
+    .field label { display:block; margin:0 0 8px; font-size:11px; letter-spacing:.15em; text-transform:uppercase; color: var(--muted); font-weight: 800; }
+    .inputwrap {
+      display: flex; align-items: center; min-width: 0;
+      height: 58px; padding: 0 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+      border: 1px solid rgba(115,228,255,.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 0 0 0 rgba(115,228,255,0);
+      transition: border-color .2s, box-shadow .2s, transform .16s;
+    }
+    .inputwrap:focus-within { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(115,228,255,.16), inset 0 1px 0 rgba(255,255,255,.08); transform: translateY(-1px); }
+    .inputwrap.invalid { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,107,125,.16); }
+    .inputwrap input { width:100%; min-width:0; background: transparent; border:0; outline:none; color: var(--text); font-weight:800; font-size:20px; }
+    .inputwrap input::placeholder { color: #847ba4; font-size: 14px; font-weight: 500; }
+    .unit { margin-left: 10px; color: var(--orange); font-weight: 800; font-size: 14px; letter-spacing: .03em; }
+    input:disabled { opacity: .55; }
+    #player[readonly] { color: var(--cyan); opacity: 1; }
+    .nameControls { display:flex; gap:10px; align-items:flex-start; margin-top:10px; }
+    .nameInfo { flex:1; min-height: 20px; font-size: 12px; line-height: 1.4; color: var(--muted); }
+    .nameInfo.ok { color: var(--lime); }
+    .nameInfo.err { color: #ff98a6; }
+    .lockedName .inputwrap { border-color: rgba(199,255,74,.4); box-shadow: inset 0 0 24px rgba(199,255,74,.05); }
+
+    .btn, .miniButton, .tab, .clear {
+      position: relative;
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      color: var(--text);
+      border-radius: 16px;
+      padding: 11px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
+      box-shadow: 0 8px 22px rgba(0,0,0,.2);
+    }
+    .miniButton:hover:not(:disabled), .tab:hover, .clear:hover { border-color: rgba(115,228,255,.46); box-shadow: 0 10px 24px rgba(0,0,0,.25), 0 0 0 3px rgba(115,228,255,.12); transform: translateY(-1px); }
+    .miniButton:active:not(:disabled), .tab:active, .clear:active, .buzzer:active { transform: translateY(2px) scale(.985); }
+    .miniButton:focus-visible, .tab:focus-visible, .clear:focus-visible, .buzzer:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 3px rgba(255,95,199,.2), 0 0 0 5px rgba(115,228,255,.18); }
+    .miniButton:disabled, .clear:disabled { opacity: .5; cursor: default; }
+    .nameButton { white-space: nowrap; }
+    .soundButton[aria-pressed="true"] { border-color: rgba(199,255,74,.35); color: var(--lime); }
+    .soundButton[aria-pressed="false"] { color: var(--muted); }
+
+    .arena {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,176,77,.14), transparent 36%),
+        linear-gradient(180deg, rgba(19,11,36,.92), rgba(9,7,21,.96));
+    }
+    .arena::before {
+      content:""; position:absolute; inset: -20% auto auto -10%; width: 220px; height: 220px;
+      background: radial-gradient(circle at 50% 50%, rgba(255,95,199,.18), transparent 70%);
+      filter: blur(8px); pointer-events:none;
+    }
+    .targetStrip { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom: 14px; }
+    .targetLabel { margin:0; font-size:11px; color: var(--cyan); letter-spacing:.22em; text-transform:uppercase; font-weight: 850; }
+    .target { margin: 6px 0 0; font-size: clamp(38px, 8vw, 66px); line-height: .92; font-weight: 950; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
+    .statusCapsule {
+      min-height: 24px; display:inline-flex; align-items:center; gap:8px;
+      padding: 9px 13px; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 16px;
+    }
+    .statusCapsule::before { content:""; width:10px; height:10px; border-radius:50%; background: var(--orange); box-shadow: 0 0 14px rgba(255,176,77,.65); }
+    .running .statusCapsule { color: #ffdbe7; border-color: rgba(255,95,199,.3); background: rgba(255,95,199,.08); }
+    .running .statusCapsule::before { background: var(--pink); box-shadow: 0 0 16px rgba(255,95,199,.7); }
+
+    .buzzerWrap { display:grid; place-items:center; padding: 12px 0 6px; }
+    .buzzer {
+      position: relative;
+      width: min(72vw, 320px); height: min(72vw, 320px);
+      border: 0; padding: 18px;
+      display:grid; place-content:center; text-align:center;
+      color: #18091f;
+      background: linear-gradient(145deg, #ffcc66 0%, #ff7fbf 52%, #6ee8ff 100%);
+      clip-path: polygon(25% 6%, 75% 6%, 94% 25%, 94% 75%, 75% 94%, 25% 94%, 6% 75%, 6% 25%);
+      box-shadow: 0 18px 0 #5e335b, 0 26px 46px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.45), inset 0 -14px 20px rgba(0,0,0,.14);
+      user-select:none; -webkit-user-select:none; touch-action: manipulation;
+      transition: transform .12s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .buzzer::before {
+      content:""; position:absolute; inset: 10px; clip-path: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,0) 35%, rgba(255,255,255,.06) 100%);
+      pointer-events:none;
+    }
+    .buzzer:hover { filter: brightness(1.06) saturate(1.06); box-shadow: 0 18px 0 #5e335b, 0 30px 56px rgba(0,0,0,.56), 0 0 0 6px rgba(115,228,255,.11); }
+    .buzzerText { display:block; font-size: clamp(34px, 8vw, 52px); font-weight: 950; letter-spacing: -.05em; line-height: 1; }
+    .buzzerHint { display:block; margin-top: 10px; font-size: 12px; letter-spacing: .22em; text-transform: uppercase; font-weight: 850; }
+    .ringText { margin-top: 16px; color: var(--muted); font-size: 12px; text-align:center; line-height: 1.45; }
+    .running .buzzer {
+      background: linear-gradient(145deg, #73e4ff 0%, #7d90ff 45%, #ff5fc7 100%);
+      box-shadow: 0 18px 0 #2d2d78, 0 26px 46px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.38), inset 0 -14px 20px rgba(0,0,0,.18);
+      color: #fff8ff;
+    }
+    .running .buzzer:hover { box-shadow: 0 18px 0 #2d2d78, 0 30px 56px rgba(0,0,0,.56), 0 0 0 6px rgba(255,95,199,.12); }
     .buzzer.pop::after {
-      content:""; position:absolute; inset:-22px; border-radius:50%; border:3px solid #d7f465;
-      opacity:0; animation:buzzerRing .6s ease-out; pointer-events:none;
+      content:""; position:absolute; inset:-12px; clip-path: polygon(25% 6%, 75% 6%, 94% 25%, 94% 75%, 75% 94%, 25% 94%, 6% 75%, 6% 25%);
+      border: 3px solid rgba(115,228,255,.9); border-radius: 0; opacity:0; animation: flashRing .55s ease-out;
+      pointer-events:none;
     }
-    .running .buzzer.pop::after { border-color:#ff8188; }
-    .running .buzzer:hover { box-shadow:0 11px 0 #76212c,0 24px 42px #000a,0 0 25px #ff5d6745; }
-    @keyframes buzzerRing {0% { opacity:.85; transform:scale(.75) } 100% { opacity:0; transform:scale(1.2) }}
-    .result:not([hidden]) { animation:resultIn .45s cubic-bezier(.2,.9,.25,1.1) both; }
-    @keyframes resultIn { from {opacity:0;transform:translateY(20px) scale(.97)} to {opacity:1;transform:translateY(0) scale(1)} }
-    .scoreRow { animation:rowIn .36s ease-out both; animation-delay:var(--delay,0ms); }
-    @keyframes rowIn { from {opacity:0;transform:translateY(7px)} to {opacity:1;transform:translateY(0)} }
-    .arena {position:relative; isolation:isolate; }
-    .spark {position:absolute;left:var(--x);top:var(--y);width:9px;height:9px;border-radius:3px;background:var(--c);
-      pointer-events:none;z-index:5;box-shadow:0 0 10px var(--c);
-      animation:sparkFly .7s cubic-bezier(.12,.8,.2,1) forwards;
+    .running .buzzer.pop::after { border-color: rgba(255,95,199,.95); }
+    @keyframes flashRing { 0% { transform: scale(.9); opacity: .9; } 100% { transform: scale(1.11); opacity: 0; } }
+
+    .result {
+      margin-top: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(255,176,77,.28);
+      background: linear-gradient(180deg, rgba(53,28,9,.5), rgba(18,12,26,.7));
+      padding: 16px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
     }
-    @keyframes sparkFly {to {opacity:0;transform:translate(var(--dx),var(--dy)) rotate(220deg) scale(.2)}}
-    .soundButton[aria-pressed="true"] {border-color:#91b73e;background:#2c3a20;color:#d7f465;box-shadow:0 0 0 2px #c5ee4a14;}
-    .soundButton[aria-pressed="false"] {color:var(--muted);}
-    .soundButton { min-width:109px; }
+    .result[hidden] { display:none; }
+    .result:not([hidden]) { animation: resultIn .45s cubic-bezier(.16,.84,.25,1.08) both; }
+    @keyframes resultIn { from { opacity:0; transform: translateY(16px) scale(.98); } to { opacity:1; transform: translateY(0) scale(1); } }
+    .resultHead { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--orange); font-weight: 900; }
+    .resultGrid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 12px; }
+    .statCard { border-radius: 18px; padding: 14px; background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.06); }
+    .resultLabel { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .resultNum { font-size: clamp(22px, 5vw, 34px); font-weight: 900; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .resultCaption { margin: 12px 0 0; color: #ffe7d0; font-size: 13px; line-height: 1.45; }
+    .saveStatus { margin: 12px 0 0; font-size: 12px; color: var(--lime); line-height: 1.45; }
+    .saveStatus.warn { color: #ffb6c0; }
+    .retryButton { margin-top: 10px; }
+
+    .boardHead { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 12px; flex-wrap: wrap; }
+    h2 { margin:0; font-size: 20px; letter-spacing:-.03em; }
+    .boardActions { display:flex; gap:8px; flex-wrap: wrap; }
+    .tabs { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 6px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 20px; margin-bottom: 12px; }
+    .tab { border-radius: 14px; padding: 11px 10px; text-align:center; }
+    .tab[aria-selected="true"] {
+      color: #180b20;
+      background: linear-gradient(135deg, var(--cyan), var(--pink));
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(115,228,255,.15), inset 0 1px 0 rgba(255,255,255,.4);
+    }
+    .boardInfo { color: var(--muted); min-height: 18px; font-size: 12px; margin: 0 0 10px; }
+    .scoreRows { border-radius: 22px; overflow:hidden; border:1px solid rgba(255,255,255,.06); background: rgba(8,7,18,.64); }
+    .scoreRow { display:grid; grid-template-columns: 34px minmax(0,1fr) auto; gap:12px; align-items:center; padding: 13px 15px; animation: rowIn .34s ease-out both; animation-delay: var(--delay, 0ms); }
+    .scoreRow + .scoreRow { border-top: 1px solid rgba(255,255,255,.05); }
+    .scoreRow.latest { background: linear-gradient(90deg, rgba(255,176,77,.13), rgba(255,95,199,.08)); }
+    @keyframes rowIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+    .rank { width: 34px; height: 34px; border-radius: 12px; display:grid; place-items:center; font-size: 14px; font-weight: 900; color:#18091f; background: linear-gradient(135deg, var(--orange), var(--pink)); box-shadow: inset 0 1px 0 rgba(255,255,255,.32); }
+    .player { min-width: 0; font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .playerSub, .scoreSub { margin-top: 4px; font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .score { text-align:right; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .empty { padding: 26px 12px; text-align:center; color: var(--muted); font-size: 13px; }
+    .clear { background: transparent; text-decoration: underline; text-underline-offset: 3px; box-shadow:none; }
+    [hidden] { display:none !important; }
+    .validInfo { font-size:11px; color: var(--muted); line-height:1.45; margin-top: 2px; }
+
+    .spark { position:absolute; left:var(--x); top:var(--y); width:10px; height:10px; border-radius:2px; background: var(--c); pointer-events:none; z-index:5; box-shadow:0 0 14px var(--c); animation: sparkFly .72s cubic-bezier(.12,.8,.2,1) forwards; }
+    @keyframes sparkFly { to { opacity:0; transform: translate(var(--dx), var(--dy)) rotate(240deg) scale(.2); } }
+
+    @media (max-width: 840px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      .topbar, .content { padding: 14px; }
+      .panel, .arena { padding: 14px; border-radius: 22px; }
+      .titleWrap h1 { font-size: clamp(25px, 8vw, 36px); }
+      .resultGrid { grid-template-columns: 1fr; }
+      .nameControls { flex-direction: column; }
+      .nameButton { width:100%; }
+      .miniButton, .tab { width:100%; }
+      .topRight { width:100%; }
+      .buzzer { width: min(80vw, 290px); height: min(80vw, 290px); }
+    }
     @media (prefers-reduced-motion: reduce) {
-      *,*::before,*::after {animation-duration:.01ms !important;transition-duration:.01ms !important;}
-      .spark {display:none;}
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      .spark { display:none; }
     }
-    @media (max-width: 390px) {
-      .settings { grid-template-columns: 1fr 1fr; gap: 9px; }
-      .app { padding-left: 14px; padding-right: 14px; }
-      .arena { padding-left: 10px; padding-right: 10px; }
-    }
-    @media (prefers-reduced-motion: reduce) { .buzzer { transition: none; } }
   </style>
 </head>
 <body>
   <main class="app">
-    <header>
-      <div class="eyebrow">TIME CHALLENGE</div>
-      <h1>Wie gut ist dein Zeitgefühl?</h1>
-      <p class="intro">Starte den Buzzer und stoppe ihn möglichst genau zur Zielzeit. Die Uhr bleibt unsichtbar.</p>
-    </header>
-
-    <section class="settings" aria-label="Spiel-Einstellungen">
-      <div class="field">
-        <label for="goal">Zielzeit</label>
-        <div class="inputwrap"><input id="goal" type="number" min="1" max="300" step="0.1" value="10" inputmode="decimal" aria-describedby="validInfo"><span class="unit">Sek.</span></div>
-      </div>
-      <div class="field">
-        <label for="player">Benutzername (Pflicht)</label>
-        <div class="inputwrap" id="playerWrap"><input id="player" type="text" maxlength="24" minlength="3" autocomplete="nickname" placeholder="3–24 Zeichen" spellcheck="false" required></div>
-        <div class="nameControls"><div class="nameInfo" id="nameInfo" role="status">Wähle einen eindeutigen Namen.</div><button class="miniButton nameButton" id="claimName" type="button">Name sichern</button></div>
-      </div>
-    </section>
-
-    <section class="arena" id="arena" aria-label="Zeitgefühl-Challenge">
-      <div class="targetLabel">DEIN ZIEL</div>
-      <div class="target" id="target">10,00 s</div>
-      <div class="status" id="status" aria-live="polite">Zuerst einen Namen sichern, dann starten.</div>
-      <button class="buzzer" id="buzzer" type="button" aria-label="Zeitmessung starten">
-        <span class="buzzerText" id="buzzerText">START</span>
-        <span class="buzzerHint" id="buzzerHint">BUZZER DRÜCKEN</span>
-      </button>
-      <div class="controls"><button type="button" class="miniButton soundButton" id="soundToggle" aria-pressed="true">♪ Ton an</button></div>
-      <div class="footerNote" id="instruction">1. Druck: Start &nbsp;·&nbsp; 2. Druck: Stopp<br>Kein Countdown, keine sichtbare laufende Zeit.</div>
-    </section>
-
-    <section class="result" id="result" hidden aria-live="polite">
-      <div class="resultHead" id="resultTitle">ERGEBNIS</div>
-      <div class="resultGrid">
-        <div><div class="resultLabel">Deine Zeit</div><div class="resultNum" id="elapsed">–</div></div>
-        <div><div class="resultLabel">Abweichung</div><div class="resultNum" id="deviation">–</div></div>
-      </div>
-      <p class="resultCaption" id="resultCaption"></p>
-      <p class="saveStatus" id="saveStatus" role="status"></p>
-      <button class="miniButton retryButton" id="retry" type="button" hidden>Erneut global speichern</button>
-    </section>
-
-    <section class="board" aria-label="Bestenliste">
-      <div class="boardHead">
-        <h2>Bestenliste</h2>
-        <div class="boardActions">
-          <button class="miniButton" id="refresh" type="button">Aktualisieren</button>
-          <button class="clear" id="clear" type="button" hidden>Lokale Liste löschen</button>
+    <section class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brandBadge">R</div>
+          <div class="titleWrap">
+            <div class="eyebrow">Invisible Timer Arena</div>
+            <h1>Reflex&nbsp;Zeitkampf</h1>
+            <p>Ein Druck startet, der nächste stoppt. Keine sichtbare laufende Zeit – nur dein Gefühl entscheidet.</p>
+          </div>
         </div>
+        <div class="topRight">
+          <button type="button" class="miniButton soundButton" id="soundToggle" aria-pressed="true">♪ Ton an</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="grid">
+          <section class="panel" aria-label="Spieler und Einstellungen">
+            <div class="panelHeader">
+              <div>
+                <h2 class="panelTitle">Setup</h2>
+                <p class="panelSub">Name sichern, Zielzeit wählen, dann loslegen.</p>
+              </div>
+            </div>
+
+            <div class="settings">
+              <div class="field">
+                <label for="player">Benutzername</label>
+                <div class="inputwrap" id="playerWrap"><input id="player" type="text" maxlength="24" minlength="3" autocomplete="nickname" placeholder="Nur A-Z, 0-9, _ oder -" spellcheck="false" required></div>
+                <div class="nameControls">
+                  <div class="nameInfo" id="nameInfo" role="status">Registriere deinen einzigartigen Spielernamen.</div>
+                  <button class="miniButton nameButton" id="claimName" type="button">Name sichern</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="goal">Zielzeit</label>
+                <div class="inputwrap"><input id="goal" type="number" min="1" max="300" step="0.1" value="10" inputmode="decimal" aria-describedby="validInfo"><span class="unit">Sek.</span></div>
+              </div>
+
+              <p class="validInfo" id="validInfo">Zielzeit: 1–300 Sekunden. Namen sind weltweit eindeutig. Erlaubt sind nur A-Z, a-z, 0-9, _ und -.</p>
+            </div>
+          </section>
+
+          <section class="panel arena" id="arena" aria-label="Reaktions-Challenge">
+            <div class="targetStrip">
+              <div>
+                <p class="targetLabel">Zielzeit</p>
+                <div class="target" id="target">10,00 s</div>
+              </div>
+            </div>
+            <div class="statusCapsule"><span id="status" aria-live="polite">Zuerst Namen sichern, dann starten.</span></div>
+            <div class="buzzerWrap">
+              <button class="buzzer" id="buzzer" type="button" aria-label="Zeitmessung starten">
+                <span class="buzzerText" id="buzzerText">START</span>
+                <span class="buzzerHint" id="buzzerHint">TIPPEN ZUM START</span>
+              </button>
+              <div class="ringText" id="instruction">1. Druck: Start · 2. Druck: Stopp<br>Währenddessen bleibt die Uhr komplett unsichtbar.</div>
+            </div>
+
+            <section class="result" id="result" hidden aria-live="polite">
+              <div class="resultHead" id="resultTitle">ERGEBNIS</div>
+              <div class="resultGrid">
+                <div class="statCard"><div class="resultLabel">Deine Zeit</div><div class="resultNum" id="elapsed">–</div></div>
+                <div class="statCard"><div class="resultLabel">Abweichung</div><div class="resultNum" id="deviation">–</div></div>
+              </div>
+              <p class="resultCaption" id="resultCaption"></p>
+              <p class="saveStatus" id="saveStatus" role="status"></p>
+              <button class="miniButton retryButton" id="retry" type="button" hidden>Erneut global speichern</button>
+            </section>
+          </section>
+        </div>
+
+        <section class="panel board" aria-label="Bestenliste">
+          <div class="boardHead">
+            <div>
+              <h2>Bestenliste</h2>
+              <p class="panelSub">Pro Name und Zielzeit zählt nur der beste Versuch.</p>
+            </div>
+            <div class="boardActions">
+              <button class="miniButton" id="refresh" type="button">Aktualisieren</button>
+              <button class="clear" id="clear" type="button" hidden>Lokale Liste löschen</button>
+            </div>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Bestenliste auswählen">
+            <button type="button" class="tab" role="tab" id="globalTab" aria-selected="true" aria-controls="scoreRows">Global</button>
+            <button type="button" class="tab" role="tab" id="localTab" aria-selected="false" aria-controls="scoreRows">Dieses Gerät</button>
+          </div>
+          <p class="boardInfo" id="boardInfo" role="status">Lade weltweite Ergebnisse …</p>
+          <div class="scoreRows" id="scoreRows" role="tabpanel" aria-live="polite"><div class="empty">Bestenliste wird geladen …</div></div>
+        </section>
       </div>
-      <div class="tabs" role="tablist" aria-label="Bestenliste auswählen">
-        <button type="button" class="tab" role="tab" id="globalTab" aria-selected="true" aria-controls="scoreRows">Global</button>
-        <button type="button" class="tab" role="tab" id="localTab" aria-selected="false" aria-controls="scoreRows">Dieses Gerät</button>
-      </div>
-      <p class="boardInfo" id="boardInfo" role="status">Lade weltweite Ergebnisse …</p>
-      <div class="scoreRows" id="scoreRows" role="tabpanel" aria-live="polite"><div class="empty">Bestenliste wird geladen …</div></div>
     </section>
-    <p class="intro" id="validInfo" style="font-size:11px;margin-top:14px">Zielzeit: 1–300 Sekunden. Namen sind weltweit eindeutig (Groß-/Kleinschreibung egal). Namen gehören zum aktuellen Browser; beim Löschen der Browserdaten kann der Name nicht automatisch wiederhergestellt werden. Ergebnisse können technisch manipuliert werden.</p>
   </main>
 
   <script>
-
-    'use strict';
+'use strict';
     // Publishable Key ist ausdrücklich für den Browser bestimmt. Niemals einen Secret Key hier eintragen.
     const SUPABASE_URL = 'https://lfnykwmysjbalweognjc.supabase.co';
     const SUPABASE_PUBLIC_KEY = 'sb_publishable_c44vw92ddWKDgqhGdML7kw_aii21Flt';
@@ -364,7 +529,7 @@
       }
     }
     function validUsername(value) {
-      return /^[\p{L}\p{N}_-]{3,24}$/u.test(value);
+      return /^[A-Za-z0-9_-]{3,24}$/.test(value);
     }
     function newToken() {
       const bytes = new Uint8Array(32);
@@ -412,7 +577,7 @@
       }
       const name = playerInput.value.trim();
       if (!validUsername(name)) {
-        setNameInfo('3–24 Zeichen: Buchstaben, Zahlen, _ oder -', 'err');
+        setNameInfo('3–24 Zeichen: A-Z, a-z, 0-9, _ oder -', 'err');
         playerInput.focus(); tone('error'); return;
       }
       try { if (!token) token = newToken(); } catch (_) {
